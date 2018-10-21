@@ -1,3 +1,4 @@
+//Test Push
 var jsInitChecktimer = setInterval(checkForJS_Finish, 2000); //needs to use timer to wait as AJAX operations does not refresh URL and hence unable to rely on change in URL to trigger changes
 
 function checkForJS_Finish() {
