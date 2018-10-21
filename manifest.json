@@ -2,17 +2,20 @@
 "manifest_version": 2,
     "name": "Impersonation Peace",
     "description": "Switch MAILTO link in ZD to IMPERSONATION link and add IMPERSONATION link in Zopim chat under customer's email",
-    "version": "1.10",
+    "version": "1.20",
     "icons": { "16": "icon_i_16.png",
            "48": "icon_i_48.png",
           "128": "icon_i_128.png" },
+    "background": {
+            "scripts": ["browser-polyfill.min.js","background.js"]
+    },
     "content_scripts": [
         {
             "matches": [
                        "https://*.zopim.com/*"
             ],
             "js": [
-                "content.js"
+                "browser-polyfill.min.js","content.js"
             ],
             "run_at": "document_end"
         },
@@ -21,9 +24,14 @@
 	               "https://bittitan.zendesk.com/agent/*"
             ],
             "js": [
-                "content.js"
+                "browser-polyfill.min.js",  "content.js"
             ],
             "run_at": "document_end"
         }		
+    ],
+    "permissions": [
+        "<all_urls>",
+        "tabs",
+        "activeTab"
     ]
 }
