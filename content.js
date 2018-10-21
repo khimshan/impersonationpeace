@@ -13,9 +13,15 @@ function checkForJS_Finish() {
                 var fields = anchorTags[k].href.split(':');
                 anchorTags[k].href = "https://internal.bittitan.com/Impersonate/" + fields[1];
                 anchorTags[k].addEventListener('click', sendClickEventToBackground);
+            } else if (anchorTags[k].innerHTML.indexOf('Account Name') != -1) {
+                console.info("Reference : " + anchorTags[k].href);
             }
         }
-
+        var regextSearchAccountBlock = /<strong>Account Name[\s\S]+?<p dir="auto">/gi;
+        var regexSearchImpersonationEmail = /<strong>Account Name.*href=\"https:.*\/Impersonate\/(\S+)\"/i;
+        var foundAccountBlock = new XMLSerializer().serializeToString(document).match(regextSearchAccountBlock);
+        foundAccountBlock.forEach(function(s) {console.log("+++++++++++++++++++++++++++++++++++++\n" + s)});
+        //console.log(new XMLSerializer().serializeToString(document));
     } else { // check for chat window popup
         visitorEmailElem = document.getElementsByClassName('meshim_dashboard_components_chatPanel_VisitorInfoTextField visitor_email info')[0];
 
@@ -42,7 +48,13 @@ function checkForJS_Finish() {
 }
 
 function sendClickEventToBackground(e) {
-    e.stopPropagation();
-    e.preventDefault();
-    browser.runtime.sendMessage({ action: 'open_new_tab', tabURL: e.target.href });
+    if (e.ctrlKey) {
+        e.stopPropagation();
+        e.preventDefault();
+        browser.runtime.sendMessage({ action: 'open_mw_tab', tabURL: e.target.href });
+    } else if (e.altKey) {
+        e.stopPropagation();
+        e.preventDefault();
+        browser.runtime.sendMessage({ action: 'open_dp_tab', tabURL: e.target.href });
+    }
 }
