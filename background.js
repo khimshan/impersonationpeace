@@ -90,7 +90,7 @@ function onDirectTabCreated(tab, targetURL)
 
     function onGot(tab)
     {
-        if (tab.url.indexOf("manage.bittitan.com") != -1)
+        if (tab.url.indexOf("manage.bittitan.com") != -1) //impersonation token granted
         { //tab which has just logged in through IMPERSONATION
             console.log("before redirect : " + targetURL);
             browser.tabs.update(tab.id, { url: targetURL });
