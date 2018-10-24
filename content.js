@@ -1,5 +1,7 @@
+GLOBALUSEWIN = true;
+
 var jsInitChecktimer = setInterval(checkForJS_Finish, 2000); //needs to use timer to wait as AJAX operations does not refresh URL and hence unable to rely on change in URL to trigger changes
-var GLOBALMAP = new Map();
+var GLOBALMAP = new Map(); // to keep track of corresponding IMPERSONATION for URL
 
 function checkForJS_Finish() {
 
@@ -85,7 +87,11 @@ function checkContextMenuTarget(event) {
             console.log("internal bittitan detected !!!" + href);
             event.preventDefault();
             event.stopPropagation();
+            if (GLOBALUSEWIN) {
+                browser.runtime.sendMessage({ action: 'open_new_window', impersonationURL: event.target.href, openDP : true });
+            } else {
             browser.runtime.sendMessage({ action: 'open_dp_tab', impersonationURL: event.target.href });
+        }
         }
     }
     console.log("ContextMenu's target href : " + href);
@@ -100,16 +106,23 @@ function sendClickEventToBackground(e) {
             console.log("---Detected INTERNA BITTITAN COM---");
             e.stopPropagation();
             e.preventDefault();
-            browser.runtime.sendMessage({ action: 'open_direct_tab', impersonationURL: e.target.href, targetURL: "https://migrationwiz.bittitan.com/app/" });
+            if (GLOBALUSEWIN) {
+                browser.runtime.sendMessage({ action: 'open_new_window', impersonationURL: e.target.href, targetURL: "https://migrationwiz.bittitan.com/app/", openDP : false });
+            } else {
+                browser.runtime.sendMessage({ action: 'open_direct_tab', impersonationURL: e.target.href, targetURL: "https://migrationwiz.bittitan.com/app/" });
+            }
         } else if ((/(migrationwiz|manage)\.bittitan\.com/i).test(e.target.href)) { // test for manage and migrationwiz links; search for REGEX 1 to update if changes; REGEX 2
             console.log("---Detected MIGRATIONWIZ OR MANAGE BITTITAN COM---");
             impersonationHREF = GLOBALMAP.get(e.target.href);
-            if (impersonationHREF != undefined) {
+            if (impersonationHREF != undefined) { // found a corresponding IMPERSONATION ID for HREF
                 console.log("---IMPERSONATE HREF NOT UNDEFINED---");
                 e.stopPropagation();
                 e.preventDefault();
-
-                browser.runtime.sendMessage({ action: 'open_direct_tab', impersonationURL: impersonationHREF, targetURL: e.target.href });
+                if (GLOBALUSEWIN) {
+                    browser.runtime.sendMessage({ action: 'open_new_window', impersonationURL: impersonationHREF, targetURL: e.target.href, openDP : false });
+                } else {
+                    browser.runtime.sendMessage({ action: 'open_direct_tab', impersonationURL: impersonationHREF, targetURL: e.target.href });
+                }
             }
         }
     }
