@@ -27,7 +27,17 @@
                 "browser-polyfill.min.js",  "content.js"
             ],
             "run_at": "document_end"
-        }		
+        },
+        {
+            "matches": [
+                   "https://migrationwiz.bittitan.com/*",
+                   "https://manage.bittitan.com/*"
+            ],
+            "js": [
+                "browser-polyfill.min.js",  "content.js"
+            ],
+            "run_at": "document_end"
+        }				
     ],
     "permissions": [
         "<all_urls>",

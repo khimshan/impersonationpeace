@@ -1,6 +1,6 @@
 GLOBALUSEWIN = true;
 
-var jsInitChecktimer = setInterval(checkForJS_Finish, 2000); //needs to use timer to wait as AJAX operations does not refresh URL and hence unable to rely on change in URL to trigger changes
+var jsInitChecktimer = setInterval(checkForJS_Finish, 7000); //needs to use timer to wait as AJAX operations does not refresh URL and hence unable to rely on change in URL to trigger changes
 var GLOBALMAP = new Map(); // to keep track of corresponding IMPERSONATION for URL
 
 function checkForJS_Finish() {
@@ -30,29 +30,61 @@ function checkForJS_Finish() {
         console.log("++++++++GLOBALMAP+++++++++++");
         console.dir(GLOBALMAP);
         //console.log(new XMLSerializer().serializeToString(document));
-    } else { // check for chat window popup
-        visitorEmailElem = document.getElementsByClassName('meshim_dashboard_components_chatPanel_VisitorInfoTextField visitor_email info')[0];
+    }
 
-        if (visitorEmailElem !== null && (typeof visitorEmailElem !== 'undefined')) {
-            if (document.getElementsByClassName('impersonation_link_class')[0] == null) {
-                var link = document.createElement('a');
-                link.className = 'impersonation_link_class';
-                link.setAttribute('href', 'https://internal.bittitan.com/Impersonate/' + visitorEmailElem.value);
-                //link.setAttribute('target', '_blank');
-                //link.setAttribute('onclick', 'window.open(this.href)');
-                link.addEventListener('click', sendClickEventToBackground);
-                link.innerHTML = "Impersonate";
-                visitorEmailElem.parentElement.appendChild(link);
-            } else {
-                document.getElementsByClassName('impersonation_link_class')[0].setAttribute('href', 'https://internal.bittitan.com/Impersonate/' + visitorEmailElem.value);
-                document.getElementsByClassName('impersonation_link_class')[0].addEventListener('click', sendClickEventToBackground);
-            }
-        } else { //clears old impersonation information
-            if (document.getElementsByClassName('impersonation_link_class')[0] !== null && (typeof document.getElementsByClassName('impersonation_link_class')[0] !== 'undefined')) {
-                document.getElementsByClassName('impersonation_link_class')[0].setAttribute('href', '');
-            }
+    var visitorEmailElem = document.getElementsByClassName('meshim_dashboard_components_chatPanel_VisitorInfoTextField visitor_email info');
+    if (visitorEmailElem.lenth > 0 && visitorEmailElem !== null && (typeof visitorEmailElem !== 'undefined')) { // check for chat window popup
+        console.log("Found CHAT Window");
+        console.dir(visitorEmailElem);
+
+        if (document.getElementsByClassName('impersonation_link_class')[0] == null) {
+            var link = document.createElement('a');
+            link.className = 'impersonation_link_class';
+            link.setAttribute('href', 'https://internal.bittitan.com/Impersonate/' + visitorEmailElem.value);
+            //link.setAttribute('target', '_blank');
+            //link.setAttribute('onclick', 'window.open(this.href)');
+            link.addEventListener('click', sendClickEventToBackground);
+            link.innerHTML = "Impersonate";
+            visitorEmailElem.parentElement.appendChild(link);
+        } else {
+            document.getElementsByClassName('impersonation_link_class')[0].setAttribute('href', 'https://internal.bittitan.com/Impersonate/' + visitorEmailElem.value);
+            document.getElementsByClassName('impersonation_link_class')[0].addEventListener('click', sendClickEventToBackground);
         }
     }
+
+    /* 
+    else { //clears old impersonation information
+        if (document.getElementsByClassName('impersonation_link_class')[0] !== null && (typeof document.getElementsByClassName('impersonation_link_class')[0] !== 'undefined')) {
+            document.getElementsByClassName('impersonation_link_class')[0].setAttribute('href', '');
+        }
+    }
+    */
+
+    var replacedImpersonationLink = false;
+    var impersonateNodeList = document.querySelectorAll('.alert_message');
+    if (!replacedImpersonationLink && impersonateNodeList.length > 0 && impersonateNodeList !== null && (typeof impersonateNodeList !== 'undefined')) {
+        console.log("Found Selector");
+        console.dir(impersonateNodeList);
+        var fields = impersonateNodeList[0].innerText.split(':');
+        var element = document.createElement("div");
+        element.setAttribute('class','alert_message');
+var element2 = document.createElement("a");
+element2.setAttribute('href','#');
+element2.appendChild(document.createTextNode("Click to refresh current tab as : " + fields[1].trim()));
+element.appendChild(element2);
+
+
+        
+        var impersonateElem = impersonateNodeList[0];
+        element.addEventListener('click', refreshCurrentTab);
+        impersonateElem.replaceWith(element);
+        replacedImpersonationLink = true;
+        console.log("HREF : " + window.location.href);
+        console.log("Email : " + fields[1].trim() + "+++");
+        console.log("InnerHTML : " + impersonateNodeList[0].innerHTML);
+        console.log("InnerText : " + impersonateNodeList[0].innerText);
+        impersonateNodeList[0].addEventListener('click', refreshCurrentTab);
+    } else { console.log("Selector not found !!!!"); }
 }
 
 function extractImpersonationIDandLinkstoMap(accountBlock) {
@@ -88,13 +120,20 @@ function checkContextMenuTarget(event) {
             event.preventDefault();
             event.stopPropagation();
             if (GLOBALUSEWIN) {
-                browser.runtime.sendMessage({ action: 'open_new_window', impersonationURL: event.target.href, openDP : true });
+                browser.runtime.sendMessage({ action: 'open_new_window', impersonationURL: event.target.href, openDP: true });
             } else {
-            browser.runtime.sendMessage({ action: 'open_dp_tab', impersonationURL: event.target.href });
-        }
+                browser.runtime.sendMessage({ action: 'open_dp_tab', impersonationURL: event.target.href });
+            }
         }
     }
     console.log("ContextMenu's target href : " + href);
+}
+
+function refreshCurrentTab(e) {
+    console.dir(e.target);
+    var fields = e.target.innerText.split(':');
+    
+    browser.runtime.sendMessage({action: 'refresh_current_tab', impersonationURL: 'https://internal.bittitan.com/Impersonate/'+fields[1].trim(), targetURL: window.location.href});
 }
 
 function sendClickEventToBackground(e) {
@@ -107,7 +146,7 @@ function sendClickEventToBackground(e) {
             e.stopPropagation();
             e.preventDefault();
             if (GLOBALUSEWIN) {
-                browser.runtime.sendMessage({ action: 'open_new_window', impersonationURL: e.target.href, targetURL: "https://migrationwiz.bittitan.com/app/", openDP : false });
+                browser.runtime.sendMessage({ action: 'open_new_window', impersonationURL: e.target.href, targetURL: "https://migrationwiz.bittitan.com/app/", openDP: false });
             } else {
                 browser.runtime.sendMessage({ action: 'open_direct_tab', impersonationURL: e.target.href, targetURL: "https://migrationwiz.bittitan.com/app/" });
             }
@@ -119,7 +158,7 @@ function sendClickEventToBackground(e) {
                 e.stopPropagation();
                 e.preventDefault();
                 if (GLOBALUSEWIN) {
-                    browser.runtime.sendMessage({ action: 'open_new_window', impersonationURL: impersonationHREF, targetURL: e.target.href, openDP : false });
+                    browser.runtime.sendMessage({ action: 'open_new_window', impersonationURL: impersonationHREF, targetURL: e.target.href, openDP: false });
                 } else {
                     browser.runtime.sendMessage({ action: 'open_direct_tab', impersonationURL: impersonationHREF, targetURL: e.target.href });
                 }

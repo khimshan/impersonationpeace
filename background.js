@@ -51,7 +51,7 @@ function onDPTabCreated(tab, windowID) {
     }
 
     function onGot(tab) {
-        if (tab.url.indexOf("manage.bittitan.com") != -1) { //tab which has just logged in through IMPERSONATION
+        if (tab.url.indexOf("Impersonate") == -1) { //after redirection from IMPERSONATION happens
             if (windowID != null) {
                 browser.tabs.update(tab.id, { url: "https://manage.bittitan.com/customers" });
                 browser.tabs.create({ "windowId": windowID, "url": "https://manage.bittitan.com/device-management/deploymentpro", "active": true });
@@ -81,7 +81,7 @@ function onDirectTabCreated(tab, targetURL) {
     }
 
     function onGot(tab) {
-        if (tab.url.indexOf("manage.bittitan.com") != -1) //impersonation token granted
+        if (tab.url.indexOf("Impersonate") == -1) //impersonation token granted
         { //tab which has just logged in through IMPERSONATION
             console.log("before redirect : " + targetURL);
             browser.tabs.update(tab.id, { url: targetURL });
@@ -158,5 +158,12 @@ browser.runtime.onMessage.addListener(function (request, sender, sendResponse) {
         
                 }, onError);
                 */
+    } else if (request.action == 'refresh_current_tab') {
+        browser.tabs.query({ currentWindow: true, active: true }).then(function (tabs) {
+            browser.tabs.update(tabs[0].id, { url: request.impersonationURL });
+            console.log("REDIRECTING TO : " + request.targetURL);
+            console.dir(tabs);
+            onDirectTabCreated(tabs[0], request.targetURL);
+        }, onError);
     }
 });
