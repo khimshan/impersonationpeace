@@ -57,7 +57,7 @@ function onDPTabCreated(tab, windowID) {
                 browser.tabs.create({ "windowId": windowID, "url": "https://manage.bittitan.com/device-management/deploymentpro", "active": true });
             } else {
                 browser.tabs.update(tab.id, { url: "https://manage.bittitan.com/customers" });
-                browser.tabs.create({ "url": "https://manage.bittitan.com/device-management/deploymentpro", "active": false });
+                browser.tabs.create({ "url": "https://manage.bittitan.com/device-management/deploymentpro", "active": true });
             }
             clearInterval(checkPendingImpersonationTabTimer); // disable polling timer URL changed
         }
@@ -94,14 +94,14 @@ function onDirectTabCreated(tab, targetURL) {
 browser.runtime.onMessage.addListener(function (request, sender, sendResponse) {
     console.log("top of OnMessage : " + request.targetURL);
     if (request.action === 'open_mw_tab') {
-        var creating = browser.tabs.create({ "url": request.impersonationURL, "active": false });
+        var creating = browser.tabs.create({ "url": request.impersonationURL, "active": true });
         creating.then(onMWTabCreated, onError);
 
     } else if (request.action === 'open_dp_tab') {
-        var creating = browser.tabs.create({ "url": request.impersonationURL, "active": false });
+        var creating = browser.tabs.create({ "url": request.impersonationURL, "active": true });
         creating.then(onDPTabCreated, onError);
     } else if (request.action === 'open_direct_tab') {
-        var creating = browser.tabs.create({ "url": request.impersonationURL, "active": false });
+        var creating = browser.tabs.create({ "url": request.impersonationURL, "active": true });
         creating.then(function (tab) {
             console.log("top of open direct tab : " + request.targetURL);
             onDirectTabCreated(tab, request.targetURL);
@@ -133,7 +133,7 @@ browser.runtime.onMessage.addListener(function (request, sender, sendResponse) {
             console.log("inside NOT FOUND WINDOW : " + request.impersonationURL);
             var creating = browser.tabs.create({ "url": request.impersonationURL, "active": true });
             creating.then(function (tab) {
-                var winCreating = browser.windows.create({ "tabId": tab.id, "focused": true });
+                var winCreating = browser.windows.create({ "tabId": tab.id, "left": window.screen.width/2, "top" : 0, "height" : window.screen.height, "width" : window.screen.width/2 });
                 winCreating.then(function (w_window) {
                     console.log("inside NOT FOUND WINDOW winCREATING : " + tab.id + ", " + request.impersonationURL);
                     if (request.openDP) {
