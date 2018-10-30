@@ -90,38 +90,75 @@ function checkForJS_Finish() {
         if (impersonateNodeList.length > 0 && impersonateNodeList !== null && (typeof impersonateNodeList !== 'undefined')) {
             console.log("Found Selector");
             console.dir(impersonateNodeList);
-            var fields = impersonateNodeList[0].innerText.split(':');
-            var div_element = document.createElement("div");
-            div_element.setAttribute('class', 'alert_message dont_update_alert_message');
-            var span_element = document.createElement("span");
-            span_element.textContent = "Click to refresh current tab as : ";
-            var current_impersonation_element = document.createElement("a");
-            current_impersonation_element.appendChild(document.createTextNode("kyap@bittitan.com"));
-            current_impersonation_element.addEventListener('click', refreshCurrentTab);
-
-            var tagged_impersonation_element = document.createElement("a");
-            //element2.setAttribute('href', '');
-            tagged_impersonation_element.appendChild(document.createTextNode("" + fields[1].trim()));
-            tagged_impersonation_element.addEventListener('click', refreshCurrentTab);
-
-            span_element.appendChild(tagged_impersonation_element);
-            span_element.appendChild(current_impersonation_element);
-
-            div_element.appendChild(span_element);
-
-
 
             var impersonateElem = impersonateNodeList[0];
-            //element.addEventListener('click', refreshCurrentTab);
 
-            impersonateElem.replaceWith(div_element);
-            console.log("impersonateElem REPLACED !");
+            var fields = impersonateElem.innerText.split(':');
+
+            var sending = browser.runtime.sendMessage({ action: 'getTabImpersonationId', detectedImpersonationID : fields[1].trim()});
+            sending.then(function (tagged_id)
+            {
+                console.info("Returned TAGGED value : " + tagged_id);
+                var div_element = document.createElement("div");
+                div_element.setAttribute('class', 'alert_message dont_update_alert_message');
+                var span_element = document.createElement("span");
+                span_element.textContent = "Refresh current tab as : ";
+                
+                var current_impersonation_element = document.createElement("a");
+                current_impersonation_element.appendChild(document.createTextNode(fields[1].trim()));
+                current_impersonation_element.addEventListener('click', refreshCurrentTab);
+
+                span_element.appendChild(current_impersonation_element);
+
+                if (fields[1].trim() != tagged_id) {
+                    var textNode1 = document.createTextNode(" (current) - ");
+                    span_element.appendChild(textNode1);
+
+                    var tagged_impersonation_element = document.createElement("a");
+                    tagged_impersonation_element.appendChild(document.createTextNode(tagged_id));
+                    tagged_impersonation_element.addEventListener('click', refreshCurrentTab);
+
+                    span_element.appendChild(tagged_impersonation_element);
+
+                    var textNode2 = document.createTextNode(" (tagged) ");
+                    span_element.appendChild(textNode2);
+                }
+
+                var anchor_element;
+
+                anchor_element = document.createElement("a");
+                anchor_element.href = "https://manage.bittitan.com/customers";
+                anchor_element.textContent = " --[C]--";
+                span_element.appendChild(anchor_element);
+
+                anchor_element = document.createElement("a");
+                anchor_element.href = "https://manage.bittitan.com/device-management/deploymentpro";
+                anchor_element.textContent = "--[D]--";
+                span_element.appendChild(anchor_element);
+
+                anchor_element = document.createElement("a");
+                anchor_element.href = "https://migrationwiz.bittitan.com/app/";
+                anchor_element.textContent = "--[M]--";
+                span_element.appendChild(anchor_element);
+
+                anchor_element = document.createElement("a");
+                anchor_element.href = "https://manage.bittitan.com/settings/licenses";
+                anchor_element.textContent = "--[L]--";
+                span_element.appendChild(anchor_element);
+
+                div_element.appendChild(span_element);
+                impersonateElem.replaceWith(div_element);
+                console.log("impersonateElem REPLACED !");
+
+            }, function(error) {console.error(error);});
+
+            //element.addEventListener('click', refreshCurrentTab);
 
             console.log("HREF : " + window.location.href);
             console.log("Email : " + fields[1].trim() + "+++");
             console.log("InnerHTML : " + impersonateNodeList[0].innerHTML);
             console.log("InnerText : " + impersonateNodeList[0].innerText);
-            impersonateNodeList[0].addEventListener('click', refreshCurrentTab);
+            //impersonateNodeList[0].addEventListener('click', refreshCurrentTab);
         } else { console.log("Selector not found !!!!"); }
     } else { console.dir(checkUpdateAlertOrNot); console.log("checkUpdateAlertOrNot SELECTOR LENGTH NE 0 !!!!"); }
 }
