@@ -1,7 +1,8 @@
 GLOBALUSEWIN = true;
 
-var jsInitChecktimer = setInterval(checkForJS_Finish, 7000); //needs to use timer to wait as AJAX operations does not refresh URL and hence unable to rely on change in URL to trigger changes
+var jsInitChecktimer = setInterval(checkForJS_Finish, 2000); //needs to use timer to wait as AJAX operations does not refresh URL and hence unable to rely on change in URL to trigger changes
 var GLOBALMAP = new Map(); // to keep track of corresponding IMPERSONATION for URL
+var GLOBALTABID = new Map(); // to keep track of correcponding IMPERSONATION ID per tab opened
 
 function checkForJS_Finish() {
 
@@ -9,21 +10,21 @@ function checkForJS_Finish() {
 
     if (document.getElementsByClassName("zd-comment").length > 0) {
         //clearInterval(jsInitChecktimer); //
-
-        anchorTags = document.getElementsByTagName('a'); // extracts all ANCHOR tag in document
+        anchorTags = document.getElementsByTagName('a'); // extracts all ANCHOR tag in document 
         for (var k = 0; k < anchorTags.length; k++) {
             if (anchorTags[k].href.indexOf('mailto') !== -1) {
                 var fields = anchorTags[k].href.split(':');
                 anchorTags[k].href = "https://internal.bittitan.com/Impersonate/" + fields[1];
                 anchorTags[k].addEventListener('click', sendClickEventToBackground);
-            } else if ((/(migrationwiz|manage)\.bittitan\.com/i).test(anchorTags[k].href)) { // test for manage and migrationwiz links; search for REGEX 2 to update if changes; REGEX 1
+            } else if ((/(migrationwiz|manage|internal)\.bittitan\.com/i).test(anchorTags[k].href)) { // test for manage and migrationwiz links; search for REGEX 2 to update if changes; REGEX 1
                 anchorTags[k].addEventListener('click', sendClickEventToBackground);
             }
         }
         var regextSearchAccountBlock = /<strong>Account Name[\s\S]+?<p dir="auto">/gi;
-        var regexSearchImpersonationEmail = /<strong>Account Name.*href=\"https:.*\/Impersonate\/(\S+)\"/i;
+        //var regexSearchImpersonationEmail = /<strong>Account Name.*href=\"https:.*\/Impersonate\/(\S+)\"/i;
         var foundAccountBlock = new XMLSerializer().serializeToString(document).match(regextSearchAccountBlock);
-
+        //console.log(new XMLSerializer().serializeToString(document));
+        
         if (foundAccountBlock != null) {
             foundAccountBlock.forEach(extractImpersonationIDandLinkstoMap);
         }
@@ -90,19 +91,30 @@ function checkForJS_Finish() {
             console.log("Found Selector");
             console.dir(impersonateNodeList);
             var fields = impersonateNodeList[0].innerText.split(':');
-            var element = document.createElement("div");
-            element.setAttribute('class', 'alert_message dont_update_alert_message');
-            var element2 = document.createElement("a");
+            var div_element = document.createElement("div");
+            div_element.setAttribute('class', 'alert_message dont_update_alert_message');
+            var span_element = document.createElement("span");
+            span_element.textContent = "Click to refresh current tab as : ";
+            var current_impersonation_element = document.createElement("a");
+            current_impersonation_element.appendChild(document.createTextNode("kyap@bittitan.com"));
+            current_impersonation_element.addEventListener('click', refreshCurrentTab);
+
+            var tagged_impersonation_element = document.createElement("a");
             //element2.setAttribute('href', '');
-            element2.appendChild(document.createTextNode("Click to refresh current tab as : " + fields[1].trim()));
-            element.appendChild(element2);
+            tagged_impersonation_element.appendChild(document.createTextNode("" + fields[1].trim()));
+            tagged_impersonation_element.addEventListener('click', refreshCurrentTab);
+
+            span_element.appendChild(tagged_impersonation_element);
+            span_element.appendChild(current_impersonation_element);
+
+            div_element.appendChild(span_element);
 
 
 
             var impersonateElem = impersonateNodeList[0];
-            element.addEventListener('click', refreshCurrentTab);
+            //element.addEventListener('click', refreshCurrentTab);
 
-            impersonateElem.replaceWith(element);
+            impersonateElem.replaceWith(div_element);
             console.log("impersonateElem REPLACED !");
 
             console.log("HREF : " + window.location.href);
@@ -143,7 +155,7 @@ function checkContextMenuTarget(event) {
     var href = event.target.href || event.target.parentNode.href;
     if (href != undefined) { // let context menu pops if not clicked on link
         if ((/internal\.bittitan\.com/i).test(href) && !event.ctrlKey) {
-            console.log("internal bittitan detected !!!" + href);
+            console.log("Right click internal bittitan detected !!!" + href);
             event.preventDefault();
             event.stopPropagation();
             if (GLOBALUSEWIN) {
@@ -158,9 +170,10 @@ function checkContextMenuTarget(event) {
 
 function refreshCurrentTab(e) {
     console.dir(e.target);
-    var fields = e.target.innerText.split(':');
+    //var fields = e.target.innerText.split(':');
+    //var fields = e.target.innerText;
 
-    browser.runtime.sendMessage({ action: 'refresh_current_tab', impersonationURL: 'https://internal.bittitan.com/Impersonate/' + fields[1].trim(), targetURL: window.location.href });
+    browser.runtime.sendMessage({ action: 'refresh_current_tab', impersonationURL: 'https://internal.bittitan.com/Impersonate/' + e.target.innerText, targetURL: window.location.href });
 }
 
 function sendClickEventToBackground(e) {
@@ -169,7 +182,7 @@ function sendClickEventToBackground(e) {
         console.log("---NO CONTROL KEY PRESSED UNDEFINED---");
         if (e.target.href.indexOf('internal.bittitan.com') >= 0) // if IMPERSONATION link, redirects to MigrationWiz main page
         {
-            console.log("---Detected INTERNA BITTITAN COM---");
+            console.log("---Left Click Detected INTERNA BITTITAN COM---" + e.target.href);
             e.stopPropagation();
             e.preventDefault();
             if (GLOBALUSEWIN) {
@@ -193,3 +206,4 @@ function sendClickEventToBackground(e) {
         }
     }
 }
+
