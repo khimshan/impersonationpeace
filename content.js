@@ -128,22 +128,22 @@ function checkForJS_Finish() {
 
                 anchor_element = document.createElement("a");
                 anchor_element.href = "https://manage.bittitan.com/customers";
-                anchor_element.textContent = " --[C]--";
+                anchor_element.textContent = "  -[C]-";
                 span_element.appendChild(anchor_element);
 
                 anchor_element = document.createElement("a");
                 anchor_element.href = "https://manage.bittitan.com/device-management/deploymentpro";
-                anchor_element.textContent = "--[D]--";
+                anchor_element.textContent = " -[D]-";
                 span_element.appendChild(anchor_element);
 
                 anchor_element = document.createElement("a");
                 anchor_element.href = "https://migrationwiz.bittitan.com/app/";
-                anchor_element.textContent = "--[M]--";
+                anchor_element.textContent = " -[M]-";
                 span_element.appendChild(anchor_element);
 
                 anchor_element = document.createElement("a");
                 anchor_element.href = "https://manage.bittitan.com/settings/licenses";
-                anchor_element.textContent = "--[L]--";
+                anchor_element.textContent = " -[L]-";
                 span_element.appendChild(anchor_element);
 
                 div_element.appendChild(span_element);
