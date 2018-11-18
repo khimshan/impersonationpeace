@@ -5,7 +5,7 @@ var GLOBALMAP = new Map(); // to keep track of corresponding IMPERSONATION for U
 var GLOBALTABID = new Map(); // to keep track of correcponding IMPERSONATION ID per tab opened
 
 function checkForJS_Finish() {
-
+    console.log("Impersonation Peace Extension RUNNING... ... ...");
     var anchorTags, visitorEmailElem;
 
     if (document.getElementsByClassName("zd-comment").length > 0) {
@@ -110,7 +110,7 @@ function checkForJS_Finish() {
 
                 span_element.appendChild(current_impersonation_element);
 
-                if (fields[1].trim() != tagged_id) {
+                if (fields[1].trim().toUpperCase() != tagged_id.toUpperCase()) {
                     var textNode1 = document.createTextNode(" (current) - ");
                     span_element.appendChild(textNode1);
 
@@ -125,27 +125,26 @@ function checkForJS_Finish() {
                 }
 
                 var anchor_element;
+                var arrayLinkNames = ["CUS","DPP","LIC","HLP","MGW"];
+                var arrayLinkHREF = [
+                    "https://manage.bittitan.com/customers",
+                    "https://manage.bittitan.com/device-management/deploymentpro",
+                    "https://manage.bittitan.com/settings/licenses",
+                    "https://help.bittitan.com/hc",
+                    "https://migrationwiz.bittitan.com/app/"
+                ];
 
-                anchor_element = document.createElement("a");
-                anchor_element.href = "https://manage.bittitan.com/customers";
-                anchor_element.textContent = "  -[C]-";
-                span_element.appendChild(anchor_element);
+                span_element.appendChild(document.createTextNode(" "));                
 
-                anchor_element = document.createElement("a");
-                anchor_element.href = "https://manage.bittitan.com/device-management/deploymentpro";
-                anchor_element.textContent = " -[D]-";
-                span_element.appendChild(anchor_element);
-
-                anchor_element = document.createElement("a");
-                anchor_element.href = "https://migrationwiz.bittitan.com/app/";
-                anchor_element.textContent = " -[M]-";
-                span_element.appendChild(anchor_element);
-
-                anchor_element = document.createElement("a");
-                anchor_element.href = "https://manage.bittitan.com/settings/licenses";
-                anchor_element.textContent = " -[L]-";
-                span_element.appendChild(anchor_element);
-
+                for (i = 0; i < arrayLinkNames.length; i++) {
+                    span_element.appendChild(document.createTextNode(" "));
+                    anchor_element = document.createElement("a");
+                    anchor_element.textContent = arrayLinkNames[i];
+                    anchor_element.href = arrayLinkHREF[i];
+                    anchor_element.setAttribute('target','_blank');
+                    span_element.appendChild(anchor_element);  
+                }
+          
                 div_element.appendChild(span_element);
                 impersonateElem.replaceWith(div_element);
                 console.log("impersonateElem REPLACED !");
