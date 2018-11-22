@@ -2,10 +2,32 @@
 var GLOBALWINDOWMAP = new Map();
 var GLOBALTABIDMAP = new Map();
 
-browser.webNavigation.onHistoryStateUpdated.addListener(function(details) { //trying to re-inject content script to Zopim chat page whenever chat window is closed
-    browser.tabs.executeScript(null,{file:"content.js"});
-    console.log("~~~~~~~~~~~~~~ webNavigation.onHistoryStateUpdated detected !!! ~~~~~~~~~~~~~~~~~~~~");
+/*
+alert("INSIDE BACKGROUN SCRIPT !");
+browser.webNavigation.onHistoryStateUpdated.addListener(function (details)
+{ //trying to re-inject content script to Zopim chat page whenever chat window is closed and content script is not responding
+    if ((/dashboard\.zopim\.com/i).test(details.url))
+    {
+        //browser.tabs.executeScript({file:"content.js"});
+        console.log("~~~~~~~~~~~~~~ webNavigation.onHistoryStateUpdated detected !!! ~~~~~~~~~~~~~~~~~~~~");
+        console.log("URL : " + details.url);
+        console.log("tabID : " + details.tabId);
+        browser.tabs.sendMessage(
+            details.tabId,
+            { ping: "Ping" }
+        ).then(function (response)
+        {
+            console.log("Message from the content script:");
+            console.log(response.pong);
+        }).catch(function (error)
+        {
+            browser.tabs.executeScript(details.tabId, { file: "content.js" });
+            alert("CONTENT SCRIPT INJECTED !");
+        }
+        );
+    }
 });
+*/
 
 function onError(error)
 {
