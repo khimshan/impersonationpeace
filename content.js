@@ -1,8 +1,11 @@
 GLOBALUSEWIN = true;
 
 var jsInitChecktimer = setInterval(checkForJS_Finish, 2000); //needs to use timer to wait as AJAX operations does not refresh URL and hence unable to rely on change in URL to trigger changes
-var timeCountInterval;
+var timerCountIntervalArray = [];
+var numOfTimer = 0;
+var numOfTimerElement = 0;
 
+var GLOBALTIMERMAP = new Map();
 var GLOBALMAP = new Map(); // to keep track of corresponding IMPERSONATION for URL
 var GLOBALTABID = new Map(); // to keep track of correcponding IMPERSONATION ID per tab opened
 
@@ -22,20 +25,21 @@ function getTimePassed(parsedStartTime)
     };
 }
 
-function initializeTimer(className, parsedStartTime)
+function initializeTimer(elemTimeCount, parsedStartTime)
 {
     console.log("++++++++ Initialized Timer Count +++++++++++");
-    var clock = document.getElementsByClassName(className);
+    //var clock = document.getElementsByClassName(className);
 
     function updateClock()
     {
-        console.dir(clock);
+        //console.dir(clock);
         var t = getTimePassed(parsedStartTime);
-        clock[0].innerHTML = "<br>Mins:&nbsp;" + ('0' + t.minutes).slice(-2) + "&nbsp;Sec:&nbsp;" + ('0' + t.seconds).slice(-2);
+        elemTimeCount.innerHTML = "<br>Mins:&nbsp;" + ('0' + t.minutes).slice(-2) + "&nbsp;Sec:&nbsp;" + ('0' + t.seconds).slice(-2);
         console.log("++++++++ Timer Count Per Second : " + t.minutes + " Sec: " + t.seconds);
     }
 
-    timeCountInterval = setInterval(updateClock, 1000);
+    timerCountIntervalArray[numOfTimer] = setInterval(updateClock, 1000);
+    numOfTimer++;
 }
 
 function checkForJS_Finish()
@@ -86,7 +90,7 @@ function checkForJS_Finish()
             console.dir(elemImpersonationLinkClass)
             console.log("------------- END OF elemImpersonationLinkClass ----------");
 
-            if (0 == elemImpersonationLinkClass.length || elemImpersonationLinkClass[0] == null || elemImpersonationLinkClass[0] == undefined)
+            if (GLOBALTIMERMAP.get(visitorEmailElem[0].value) == undefined || 0 == elemImpersonationLinkClass.length || elemImpersonationLinkClass[0] == null || elemImpersonationLinkClass[0] == undefined)
             {
                 console.log("impersonation_link_class is NULL");
 
@@ -110,8 +114,10 @@ function checkForJS_Finish()
                 visitorEmailElem[0].parentElement.appendChild(elemTimeCount);
                 console.log("appendChild to PARENTELEMENT");
 
+                GLOBALTIMERMAP.set(visitorEmailElem[0].value, elemTimeCount);
+
                 var parsedStartTime = Date.parse(new Date());
-                initializeTimer("impersonation_timecount", parsedStartTime);
+                initializeTimer(elemTimeCount, parsedStartTime);
             } else
             {
                 console.log("visitorEmailElem value : " + visitorEmailElem[0].value);
@@ -121,11 +127,18 @@ function checkForJS_Finish()
         }
     } else
     { //clears old impersonation information
-        if (document.querySelectorAll('.impersonation_link_class').length > 0)
+        if (document.querySelectorAll('.impersonation_link_class').length > 0 && document.querySelectorAll('.jx_ui_html_div.wrapper').length == 0)
         {
             console.log("<> impersonation_link_class FOUND. <>");
 
-            clearInterval(timeCountInterval);
+            for (i = 0; i < timerCountIntervalArray.length; i++)
+            {
+                clearInterval(timerCountIntervalArray[i]);
+            }
+            timerCountIntervalArray = [];
+            numOfTimer = 0;
+            numOfTimerElement = 0;
+            GLOBALTIMERMAP - new Map();
 
             var elements = document.getElementsByClassName('impersonation_timecount');
             while (elements.length > 0)
