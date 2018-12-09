@@ -1,8 +1,8 @@
 {
 "manifest_version": 2,
-    "name": "Impersonation Peace (Beta)",
+    "name": "Impersonation Peace",
     "description": "Switch MAILTO link in ZD to IMPERSONATION link and add IMPERSONATION link in Zopim chat under customer's email",
-    "version": "1.25",
+    "version": "1.3",
     "icons": { "16": "icon_i_16.png",
            "48": "icon_i_48.png",
           "128": "icon_i_128.png" },
